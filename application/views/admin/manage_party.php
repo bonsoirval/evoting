@@ -76,7 +76,10 @@
                 echo "<td>" . $table_data->slogan . "</td>";
                 echo "<td>" . $table_data->ideology . "</td>";
                 echo "<td>" . $table_data->status . "</td>";
-                echo "<td>" . $table_data->slogan . "</td>";
+                ?>
+              <td><a target="_blank" href="<?php echo base_url('index.php/admin/update_party'); ?>">Update</a></td>
+              <?php 
+                // echo "<td>" . $table_data->slogan . "</td>";
                 echo "</tr>";
               ?>
               <?php } ?>

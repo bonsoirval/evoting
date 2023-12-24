@@ -2,15 +2,15 @@
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Admin extends CI_Controller{
-    
+    public $data = array();
+    public $form_validation;
+    public $Admin_model;
 
     public function __construct(){
         parent::__construct();
         $this->load->helper(array('url', 'form'));
         $this->load->library('form_validation');
         $this->load->model('Admin_model');
-        $this->data = array();
-        
     }
 
     public function index(){
@@ -121,7 +121,7 @@ class Admin extends CI_Controller{
 
             // get values from model
             $query = "
-                SELECT name, abbreviation, slogan, ideology, status 
+                SELECT id, name, abbreviation, slogan, ideology, status 
                 FROM party 
                 WHERE $query_type = '".$this->db->escape_str($query)."' ";
 
@@ -134,6 +134,52 @@ class Admin extends CI_Controller{
         $this->load->view('admin/partials/header',$this->data);
         $this->load->view('admin/manage_party', $this->data);
         $this->load->view('admin/partials/footer',$this->data);
+    }
+
+    public function update_party(){
+
+        // if form submitted
+        if($this->input->post() && $this->input->post('party_clicked')){
+            if($this->Admin_model->update_party() == True){ // update was successful
+                return redirect('admin/manage_party');
+            }
+        }
+
+        $party_update = $this->Admin_model->update_party();
+        
+        $this->data['title']        = "Party update";
+        // exit(var_dump($party_update));
+        if ($this->form_validation->run() == False){
+            // form fields
+            $this->data['party_update'] = $party_update;
+            $this->data['party']        = array('name'=>'party', 'class'=>'form-control', 'value' => $party_update->name);
+            $this->data['abbreviation'] = array('name' => 'abbreviation', 'class'=>'form-control', 'value' => $party_update->abbreviation);
+            $this->data['slogan']       = array('name'=>'slogan', 'class'=>'form-control', 'value' => $party_update->slogan);
+            $this->data['ideology']     = array('name' => 'ideology', 'class'=>'form-control', 'value'=> $party_update->ideology);
+            $this->data['status']       = array('name' => 'status');
+            $this->data['options']      = array('' =>'Select Status', 'deactivated' => 'Deactivated', 'active' => 'Active', 'non' => 'None existent' );
+            $this->data['extra']        = array('class' => 'form-control');
+
+            // validation rules
+            $this->form_validation->set_rules('party',"Party",'required',array('<style color:"red">Party name is required</style>'));
+            $this->form_validation->set_rules('abbreviation', 'Abbreviation','required',array('<style color:"red">Party abbreviation is required</style>'));
+            $this->form_validation->set_rules('slogan', 'Slogan','required',array('Party slogan is required'));
+            $this->form_validation->set_rules('ideology','Ideology','required', array('Ideology is required'));
+            $this->form_validation->set_rules('status', 'Status', 'required', array('Status is required'));
+
+
+            $this->load->view('admin/partials/header', $this->data);
+            $this->load->view('admin/update_party', $this->data);
+            $this->load->view('admin/partials/footer', $this->data);
+        }else{
+            exit("Hey you");
+            $result = $this->Admin_model->update_party();
+            exit(var_dump($result));
+            // Load views
+            $this->load->view('admin/partials/header', $this->data);
+            $this->load->view('admin/update_party', $this->data);
+            $this->load->view('admin/partials/footer', $this->data);
+        }
     }
 
     public function add_election(){

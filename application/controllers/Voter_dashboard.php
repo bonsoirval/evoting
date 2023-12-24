@@ -4,6 +4,9 @@
 include_once('Voters.php');
 
 class voter_dashboard extends Voters{
+    public $Voters_model; 
+
+    
     public function __construct(){
         parent::__construct();
         $this->load->helper(array( 'url'));

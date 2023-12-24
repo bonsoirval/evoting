@@ -10,6 +10,37 @@ class Admin_model extends CI_model{
         $this->load->database();
     }
 
+    public function update_party(){
+        // confirm posted data
+        $party_clicked = $this->input->post('party_clicked');
+        
+        if ($this->input->post()){
+            // set variable to null so the condition is not passed the 2nd time
+            $party_clicked  = null;
+            $party          = xss_clean($this->db->escape($this->input->post('party')));
+            $abbreviation   = xss_clean($this->db->escape($this->input->post('abbreviation')));
+            $slogan         = xss_clean($this->db->escape($this->input->post('slogan')));
+            $ideology       = xss_clean($this->db->escape($this->input->post('ideology')));
+            $status         = xss_clean($this->db->escape($this->input->post('status')));
+
+            
+            $query = "UPDATE party SET name = $party, abbreviation = $abbreviation, slogan = $slogan, ideology = $ideology, status = $status 
+            WHERE id = '".(int)$this->session->search_id."' "; 
+            $result = $this->db->query($query);
+            
+            if($result == True){
+                $this->session->set_flashdata('party_update', 'Party Updated Successfully');
+                return $result;
+            }
+        }
+    
+        $this->db->select("name, abbreviation, slogan, ideology, status");
+        $this->db->from('party');
+        $this->db->where('id', (int)$this->session->search_id);
+        $result = $this->db->get()->row();
+        
+        return $result;
+    }
 
     public function admin_login(){
         $username = $this->db->escape($this->security->xss_clean($this->input->post('username')));
@@ -51,9 +82,14 @@ class Admin_model extends CI_model{
         
         // $this->db->select($query_type);
         // $this->db->where(, $query);
-        return $this->db->query(
-        //    "SELECT name, abbreviation, slogan, ideology, status FROM party"
-        $query
-        )->row();
+        $search_result = $this->db->query($query)->row();
+
+        // Add session data if data exists
+        if (!empty($search_result->id)){
+            $this->session->set_userdata("search_id", $search_result->id);
+        }
+        
+        return $search_result;
     }
+
 }
