@@ -9,7 +9,7 @@ class Admin extends CI_Controller{
     public function __construct(){
         parent::__construct();
         $this->load->helper(array('url', 'form'));
-        $this->load->library('form_validation');
+        $form_validation = $this->load->library('form_validation');
         $this->load->model('Admin_model');
     }
 
@@ -183,6 +183,40 @@ class Admin extends CI_Controller{
     }
 
     public function add_election(){
+        
+        // validate no duplications
+        $this->form_validation->set_rules('election', 'Election', 'required|is_unique[election.name]', array('required' =>'Election name must be provided','is_unique'=>'Duplicate [double] election names are not allowed'));
+        $this->form_validation->set_rules('election_date', 'Election date','required', array('required' => "Date for election must be provided"));
+        $this->form_validation->set_rules('region', 'Election Region','required', array('required' => 'Provide election region'));
+
+        // add form fields to this->data
+        $this->data['election'] = array('name' => 'election', 'class'=>'form-control', 'type' => 'text', 'required' => True, 'placeholder' => 'Enter election name');
+        $this->data['election_date'] = array('name' => 'election_date', 'class'=>'form-control', 'type' => 'date', 'required' => True);
+        $this->data['region'] = array('name' => 'region', 'class'=>'form-control', 'type' => 'text','required' => True, 'placeholder' => 'Enter election region');
+        $this->data['add_election'] = array('name' => 'add_election', 'type' => 'submit',  'value' => 'Add Election', 'class' => 'form-control');
+        $this->data['title'] = "Add election";
+        // create region variable 
+        $this->data['region'] = $this->Admin_model->get_region();
+        
+        /**
+         * if button is clicked
+         * form validation successful
+         * and data posted
+         */
+        $election = $this->input->post('add_election');
+        if(isset($election) && $this->form_validation->run() == True &&
+        $this->input->post()){
+            $this->Admin_model->add_election();
+        }
+        // election region dropdown options
+        $options = array();
+        // populate the dropdown options
+        foreach ($this->data['region'] as $key => $val){
+            $options[$val->id] = $val->state;
+        }
+
+        $this->data['options'] = $options;
+
         $this->load->view('admin/partials/header',$this->data);
         $this->load->view('admin/add_election', $this->data);
         $this->load->view('admin/partials/footer',$this->data);

@@ -1,0 +1,8 @@
+database has a table region(id, state)
+voters have region_id (refering to region id)
+each election has region_id (refering to region id)
+
+INSTRUCTION (At database level and then php level)
+Use this region to tie voters to votes. 
+Each voter casts vote to only its region
+Each voter casts vote to the federal election

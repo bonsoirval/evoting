@@ -10,6 +10,35 @@ class Admin_model extends CI_model{
         $this->load->database();
     }
 
+    public function add_election(){
+        /**
+         * validate and pick post data, 
+         * clean data
+         * and insert into database
+         * add flash data
+         */
+        if(null !== $this->input->post('add_election') &&
+        $this->input->post() && $this->form_validation->run() == True){
+            $election = $this->db->escape_str(xss_clean($this->input->post('election')));
+            $region = $this->db->escape_str(xss_clean($this->input->post('region')));
+            $election_date = $this->db->escape_str(xss_clean($this->input->post('election_date')));
+             
+            // add flash data
+            $this->session->set_flashdata('election_added', "Election added successfully.");
+            return $this->db->insert(
+                'election', 
+                $data = array(
+                    'name' => $election, 
+                    'region_id' => $region, 
+                    'election_date' => $election_date,
+                    'status' => 'upcoming',
+                ), 
+                True);
+        }
+
+        return False;
+    }
+
     public function update_party(){
         // confirm posted data
         $party_clicked = $this->input->post('party_clicked');
@@ -42,6 +71,12 @@ class Admin_model extends CI_model{
         return $result;
     }
 
+    public function get_region(){
+        $this->db->select('id, state');
+        $this->db->from('regions');
+        $this->db->where('id >',0);
+        return $this->db->get()->result_object();
+    }
     public function admin_login(){
         $username = $this->db->escape($this->security->xss_clean($this->input->post('username')));
         // $password = $this->db->escape($this->security->xss_clean($this->input->post('password')));
