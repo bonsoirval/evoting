@@ -59,6 +59,10 @@
 							<label for="username">Username : </label>
 							<?php echo form_input($username); ?>
 						</div>
+						<div class="form-groupd">
+							<label for='state'>State : </label>
+							<?php print(form_dropdown('region', $options,'select', $extra = array('class' => 'form-control'))); ?>
+						</div>
 						<div class="form-group">
 							<label for="nin">NIN : </label>
 							<?php echo form_input($nin); ?>

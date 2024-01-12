@@ -8,7 +8,8 @@ class Voters extends CI_Controller {
 		parent::__construct();
 
 		// load session library
-		$this->load->library('session'); 
+		$this->load->library('session');
+		$this->load->model('Voters_model'); 
 
 		$this->load->helper('url');
 		$this->data = array(
@@ -26,6 +27,7 @@ class Voters extends CI_Controller {
 		$this->load->library('form_validation');
 
 		// Validation Rules
+		$this->form_validation->set_rules('region', 'Regions', 'required');
 		$this->form_validation->set_rules('lastname', 'Lastname', 'required');
 		$this->form_validation->set_rules('username', 'Username', 'min_length[5]|max_length[12]', 'Username must be filled and unique');
 		$this->form_validation->set_rules('nin', "NIN', required|min_length(10)|max_length(15)|is_uniqued[voters.nin]");
@@ -39,86 +41,28 @@ class Voters extends CI_Controller {
 
 		// form submittion 
 		if ($this->form_validation->run() === FALSE){	
-			$firstname = array(
-				'name'	=>	"firstname",
-				//'id' 	=>	"firstname",
-				'required'	=> 'required',
-				'class' => 'form-control',
-				'type' => "text",
-				'placeholder' => 'Enter first name',
-				'value' => set_value('firstname'),
-				// 'errors' => array(
-				// 	'required' => 'You must provide a value.')
-			);	
-			$lastname = array(
-				'name' => 'lastname',
-				//'id' =>	"lastname",
-				'required' => 'required',
-				'class' => 'form-control',
-				'type' => "text",
-				'placeholder' => "Enter last name",
-				'value' => set_value('lastname'),
-				// 'errors' => array(
-				// 	'required' => 'You must provide a value.')
-			);
-
-			$username = array(
-				'name' => 'username',
-				'id' =>	"username",
-				'required' => 'required',
-				'class' => 'form-control',
-				'type' => "text",
-				'placeholder' => 'Enter Username',
-				'value' => set_value('username'),
-			);
-			$nin = array(
-				'name' => 'nin',
-				'id' => 'nin',
-				'required' => 'required',
-				'placeholder' => 'Enter NIN',
-				'type' => 'text',
-				'class' => 'form-control',
-				'value' => set_value('nin'),
-			);
-			$email = array(
-				'name' => 'email',
-				'id' => 'email',
-				'required' => 'required',
-				'placeholder' => 'Enter email',
-				'type' => 'text',
-				'class' => 'form-control',
-				'value' => set_value('email'),
-			);
-			$password = array(
-				'name' => 'password',
-				'id' => 'password',
-				'required' => 'required',
-				'class' => 'form-control',
-				'placeholder' => 'Enter password',
-				'type' => 'password',
-			);
-			$passconf = array(
-				'name' => 'passconf',
-				'id' => 'passconf',
-				'required' => 'required',
-				'class' => 'form-control',
-				'placeholder' => 'Enter password again',
-				'type' => 'password',
-			);
-
-			$this->data['firstname'] = $firstname;
-			$this->data['lastname'] = $lastname;
-			$this->data['username'] = $username;
-			$this->data['nin'] = $nin;
-			$this->data['email'] = $email;
-			$this->data['password'] = $password;
-			$this->data['passconf'] = $passconf;
+			$this->data['firstname']	= array('name'	=>	"firstname",'required'	=> 'required', 'class' => 'form-control', 'type' => "text", 'placeholder' => 'Enter first name','value' => set_value('firstname'));	
+			$this->data['lastname']		= array('name' => 'lastname','required' => 'required', 'class' => 'form-control', 'type' => "text", 'placeholder' => "Enter last name",'value' => set_value('lastname'));
+			$this->data['username']		= array('name' => 'username','id' =>	"username",'required' => 'required','class' => 'form-control', 'type' => "text",'placeholder' => 'Enter Username','value' => set_value('username'));
+			$this->data['nin']			= array('name' => 'nin','id' => 'nin','required' => 'required','placeholder' => 'Enter NIN','type' => 'text','class' => 'form-control','value' => set_value('nin'));
+			$this->data['email']		= array('name' => 'email','id' => 'email','required' => 'required','placeholder' => 'Enter email', 'type' => 'text','class' => 'form-control','value' => set_value('email'));
+			$this->data['password']		= array('name' => 'password','id' => 'password','required' => 'required','class' => 'form-control','placeholder' => 'Enter password','type' => 'password');
+			$this->data['passconf']		= array('name' => 'passconf',	'id' => 'passconf','required' => 'required','class' => 'form-control','placeholder' => 'Enter password again','type' => 'password');
+			$this->data['options']		= $this->Voters_model->get_regions();
+			
+			// $this->data['firstname']	= $firstname;
+			// $this->data['lastname']		= $lastname;
+			// $this->data['username'] 	= $username;
+			// $this->data['nin'] 			= $nin;
+			// $this->data['email'] 		= $email;
+			// $this->data['password'] 	= $password;
+			// $this->data['passconf'] 	= $passconf;
 			
 			$this->load->view('templates/header.html', $this->data);
 			$this->load->view('voter_register', $this->data);
 			$this->load->view('templates/footer.html', $this->data);
 		}else{
-			$this->load->model('Voters_model');
+			// $this->load->model('Voters_model');
 			$this->Voters_model->register_voter();
 			$this->load->view('voter_register_success');
 		}
@@ -139,7 +83,7 @@ class Voters extends CI_Controller {
 			$this->login_form();
 			
 		}else{
-			$this->load->model('Voters_model');
+			// $this->load->model('Voters_model');
 			$logged_in = $this->Voters_model->login_voter();
 
 			if ($logged_in === FALSE) {
@@ -157,7 +101,7 @@ class Voters extends CI_Controller {
 	}
 
 	public function voter_logout(){
-		$this->load->model('Voters_model');
+		// $this->load->model('Voters_model');
 		$logout = $this->Voters_model->logout_voter();
 		if ($logout === TRUE) {
 			redirect(base_url());

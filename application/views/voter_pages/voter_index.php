@@ -1,13 +1,13 @@
 <br/><br/><br/><br/>
+
 <table class ='table table-condensed'>
   <thead>
-    <tr><th>ID</th><th><center>Election</center><th><th>Party</th></tr>
+    <tr><th>ID</th><th><center>Election</center><th><th>Choice Candidate</th></tr>
   <thead>
   <tbody>
     <?php if (count($elections) >= 1) { ?>
     <form method = 'POST' action="<?php echo base_url('index.php/voter_dashboard/vote'); ?>">
     <?php for($index=0; $index < count($elections); $index++) {?>
-
       <?php $candidates = get_candidate($elections[$index]['election_id']); ?>
       <?php //var_dump($candidates); ?>
       <tr>
@@ -18,14 +18,14 @@
 
       <td>
       <td>
-        <center>
-        <select name='<?php echo $elections[$index]['election']; ?>'>
+        
+          <select name='<?php echo $elections[$index]['election']; ?>'>
           <option value='0'>Select Candidate</option>
           <?php for($i=0; $i < count($candidates); $i++){ ?>
-          <option value='<?php  echo $candidates[$i]['cand_id']; ?>'><?php  echo $candidates[$i]['cand_id']; ?></option>
+          <option value='<?php  echo $candidates[$i]['cand_id']; ?>'><?php  echo $candidates[$i]['cand_name']; ?></option>
           <?php } ?>
         </select>
-          </center>
+        
       </td>
       <?php } ?>
     </tr>

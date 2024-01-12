@@ -7,6 +7,15 @@ class Voters_model extends CI_Model{
         $this->load->database();
     }
 
+    public function get_regions(){
+        $result = $this->db->query("SELECT id,state FROM regions")->result();
+        $options = array(''=>"Select Election State"); // associative array populated below
+        for($index = 0; $index < count($result); $index++){
+            $options[$result[$index]->id] = $result[$index]->state;
+        }
+
+        return $options;
+    }
     public function vote($my_vote){
         foreach($my_vote as $key => $val){
             $result = $this->db->query("
@@ -29,12 +38,6 @@ class Voters_model extends CI_Model{
                 WHERE voter_id = " . $this->session->userid . " 
                 AND election_id = " . $result[0]['election_id'] . "
             ");
-
-            // echo "candidate id : ".$result[0]['id'] . "<br/>";
-            // echo "election id : ".$result[0]['election_id'] . "<br/>";
-            // var_dump($result);
-            // echo "<br/>";
-            // echo "<br/>";
         }
         echo "<br/>";
     }
@@ -42,17 +45,39 @@ class Voters_model extends CI_Model{
     public function register_voter(){
         // check if user already registered
         $data = array(
-
-            'firstname' => $this->db->escape($this->input->post('firstname')),
-			'lastname'  => $this->db->escape($this->input->post('lastname')),
-			'username'  => $this->db->escape($this->input->post('username')),
-            'email'     => $this->db->escape($this->input->post('email')),
-			'nin'       => $this->db->escape($this->db->escape($this->input->post('nin'))),
+            'firstname' => $this->db->escape($this->security->xss_clean($this->input->post('firstname'))),
+			'lastname'  => $this->db->escape($this->security->xss_clean($this->input->post('lastname'))),
+			'username'  => $this->db->escape($this->security->xss_clean($this->input->post('username'))),
+            'email'     => $this->db->escape($this->security->xss_clean($this->input->post('email'))),
+			'nin'       => $this->db->escape($this->security->xss_clean($this->db->escape($this->input->post('nin')))),
             // password hash
             'password'  => hash('sha512', $this->db->escape($this->input->post('password'))),
         );
         
         $this->db->insert('voters', $data);
+        $new_voter_id = $this->db->select_max('id')->from('voters')->get()->row()->id;
+
+        $region_id = $this->input->post('region');
+
+        $this->db->select('id,region_id');
+        $this->db->from('election');
+        $this->db->where('region_id', $region_id);
+        $region_elections =  $this->db->get()->result_array();
+        
+        for($index = 0; $index < count($region_elections); $index++){
+            $data = array(
+                'voter_id' => (int)$new_voter_id, 
+                'status' => 'not voted',
+                'election_id' => (int)$region_elections[$index]['id']);
+            $this->db->insert('voter_has_election', $data);
+        }
+        /**
+         * register voter
+         * pick his id 
+         * pick the id of his chosen region 
+         * for all elections in the region and fct
+         * add voter_has_election
+         */
         echo $this->db->affected_rows();
         
     }
@@ -119,8 +144,9 @@ class Voters_model extends CI_Model{
       
         $election_result = $this->db->query(
             "
-            SELECT DISTINCT(e.name) AS election, e.id AS election_id
+            SELECT DISTINCT(e.name) AS election,c.surname as candidate,  e.id AS election_id
             FROM election e 
+            JOIN candidate c ON c.election_id = e.id
             WHERE e.id IN (
                 SELECT vhe.election_id 
                 FROM voter_has_election vhe
@@ -131,10 +157,10 @@ class Voters_model extends CI_Model{
             order by election
             "
         )->result_array();
-
+        // exit(var_dump($election_result));
         return $election_result; 
     }
-    
+
     // get candidates
     public function get_candidate($election_id){
         return 'cand election id: '.$election_id;
@@ -156,6 +182,7 @@ class Voters_model extends CI_Model{
 
         return $election; 
     }
+
     public function logout_voter(){
         session_destroy();
         return TRUE;

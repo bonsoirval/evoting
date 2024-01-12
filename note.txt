@@ -1,3 +1,17 @@
+register voter
+pick his id 
+pick the id of his chosen region 
+for all elections in the region and fct
+    add voter_has_election
+    
+
+voters (id, firstname, lastname, username, email, nin, password)
+voter_has_election (id, voter_id, election_id, status)
+election(id, name, region_id, election_date, status)
+regions(id, state)
+
+
+
 database has a table region(id, state)
 voters have region_id (refering to region id)
 each election has region_id (refering to region id)

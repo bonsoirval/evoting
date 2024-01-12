@@ -1,4 +1,7 @@
-<?php 
+<?php
+
+use function PHPSTORM_META\type;
+
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Admin extends CI_Controller{
@@ -223,11 +226,94 @@ class Admin extends CI_Controller{
     }
 
     public function manage_election(){
-        $this->load->view('admin/partials/header',$this->data);
-        $this->load->view('admin/manage_election', $this->data);
-        $this->load->view('admin/partials/footer',$this->data);
+        $post_data = $this->input->post();
+        // exit(var_dump($post_data));
+            // validation rules
+            $this->form_validation->set_rules('query',"Query",'required',
+            array('<style color:"red">Search Qery needed</style>'));
+            $this->form_validation->set_rules('search_type', 'Search Type','required',
+            array('<style color:"red">Search Type</style>'));
+
+            // form fields
+            $this->data['query']        = array('type' => 'text', 'name' => 'query', 'class' => 'form-control','id' => 'query', 'required' => TRUE,'placeholder' => 'Search value, Date format : yyyy-mm-dd');
+            $this->data['search_type']  = array('0' => 'Select Search Item', '1' => 'All Elections', '2' => 'Election Title', '3' => 'Election Region', '4' => 'Election Date', '5' => 'Election Status'); 
+            $this->data['attr']         = array('class' => 'form-control');
+            // found in update_election.php page
+            $this->data['hidden'] = array(
+                'type' => 'hidden', 
+                'name' => 'election_clicked', 
+                'value' => 'clicked');
+        if(empty($post_data)){
+
+            $this->data['title'] = "Manage Election";
+            $this->load->view('admin/partials/header',$this->data);
+            $this->load->view('admin/manage_election', $this->data);
+            $this->load->view('admin/partials/footer',$this->data);
+        }elseif (!empty($post_data)){
+            // fetch election data
+            $this->data['result'] = $this->Admin_model->update_election();
+
+            $this->load->view('admin/partials/header',$this->data);
+            $this->load->view('admin/manage_election', $this->data);
+            $this->load->view('admin/partials/footer',$this->data);
+            
+        }else{
+            print("Done");
+        }
+
+        // // if search request sent
+        // exit(var_dump($this->input->post()));
+        // if ($this->input->post()){
+        //     $this->data['result'] = $this->Admin_model->update_election();
+        //     // exit(var_dump($this->data['result']));
+        //     // exit(var_dump($this->data['result']));
+        //     $this->load->view('admin/partials/header',$this->data);
+        //     $this->load->view('admin/update_election', $this->data);
+        //     $this->load->view('admin/partials/footer',$this->data);
+        //     // exit('exited');
+        //     return 0;
+        // }else{
+ 
+        //     $this->load->view('admin/partials/header',$this->data);
+        //     $this->load->view('admin/manage_election', $this->data);
+        //     $this->load->view('admin/partials/footer',$this->data);
+        // }
     }
 
+    public function update_election(){
+       $this->data['title']        = "Election update";
+        
+        // form fields
+        $this->data['name']        = array('name'=>'party', 'class'=>'form-control', 'value' => '$party_update->name');
+        $this->data['query']        = array(
+            'name' => 'update_election_query', 
+            'placeholder' => 'Update election query',
+            'class' => 'form-control');
+        
+        $this->data['hidden']       = array('type' => 'hidden', 'name' => 'election_clicked', 'value' => 'clicked');
+        $this->data['query']        = array('type' => 'text','name' => 'query','class' => 'form-control','id' => 'query','required' => TRUE,'placeholder' => 'Search');
+        $this->data['search_type']  = array('0' => 'Select Search Item', '1' => 'All Elections', '2' => 'Election Title', '3' => 'Election Region', '4' => 'Election Date', '5' => 'Election Status'); 
+        $this->data['attr']         = array('class' => 'form-control');
+        $this->data['result']       = $this->Admin_model->update_election(); //'yetAnother';
+
+        if ($this->form_validation->run() == False){
+            
+            $this->load->view('admin/partials/header', $this->data);
+            $this->load->view('admin/update_election', $this->data);
+            $this->load->view('admin/partials/footer', $this->data);
+        }else{
+            exit("Hey you");
+            $update_election = $this->Admin_model->update_election();
+            $this->data['update_election'] = $update_election;
+    
+            $result = $this->Admin_model->update_party();
+            exit(var_dump($result));
+            // Load views
+            $this->load->view('admin/partials/header', $this->data);
+            $this->load->view('admin/update_election', $this->data);
+            $this->load->view('admin/partials/footer', $this->data);
+        }
+    }
     public function add_voter_group(){
         $this->load->view('admin/partials/header',$this->data);
         $this->load->view('admin/add_voter_group', $this->data);
