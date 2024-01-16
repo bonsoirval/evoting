@@ -7,7 +7,7 @@
   <tbody>
     <?php if (count($elections) >= 1) { ?>
     <form method = 'POST' action="<?php echo base_url('index.php/voter_dashboard/vote'); ?>">
-    <?php for($index=0; $index < count($elections); $index++) {?>
+    <?php for($index=0; $index < count($elections); $index++) 
       <?php $candidates = get_candidate($elections[$index]['election_id']); ?>
       <?php //var_dump($candidates); ?>
       <tr>
